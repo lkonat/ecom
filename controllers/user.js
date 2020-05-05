@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const bcrypt = require('bcryptjs');
 // User.open().then((res_x)=>{
 //     console.log(res_x,"Database");
 //     if(res_x.created || res_x.opened){
@@ -63,5 +64,4 @@ exports.signup = async(req,res)=>{
     }else{
       res.json({err:'error while creating database connection'});
     }
-    res.json({message:"helllo"});
 };

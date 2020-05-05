@@ -2,6 +2,7 @@ const express = require(`express`);
 const app = express();
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const expressValidator = require("express-validator");
 require('dotenv').config();
 
 
@@ -9,6 +10,7 @@ require('dotenv').config();
 
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(expressValidator());
 // Routes
 app.use('/user', require('./routes/user.js'));
 
