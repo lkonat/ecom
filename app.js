@@ -12,11 +12,11 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(expressValidator());
 // Routes
-app.use('/user', require('./routes/user.js'));
+app.use('/api', require('./routes/auth.js'));
+app.use('/api', require('./routes/user.js'));
 
 const port = process.env.PORT || 3000;
 
 app.listen(port,()=>{
     console.log(`Seerver is running on port ${port}`);
-    // console.log(process.env)
 });
