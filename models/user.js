@@ -47,7 +47,7 @@ class MainDatabaseControler {
         }
         let id = this.makeid();
         let ts = new Date().getTime();
-        this.db.run(`INSERT INTO users(id,email,name,password,ts) VALUES(?,?,?,?,?)`,[id,args.email,args.name,args.hash,ts], function(err, row) {
+        this.db.run(`INSERT INTO users(id,email,name,password,ts,role) VALUES(?,?,?,?,?,?)`,[id,args.email,args.name,args.hash,ts,0], function(err, row) {
             if (!row){
                 return resolve(null);
             }
