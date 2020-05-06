@@ -12,7 +12,8 @@ class MainDatabaseControler {
         email TEXT NOT NULL,
         name TEXT NOT NULL,
         password TEXT NOT NULL,
-        ts Integer NOT NULL
+        ts Integer NOT NULL,
+        role Integer NOT NULL
         );`
     };
     this.c_events = {}
@@ -56,7 +57,7 @@ class MainDatabaseControler {
   }
   getUser(args){
     return new Promise((resolve, reject) => {
-        this.db.get('SELECT name,email,id FROM users WHERE username = ? AND password = ?', args.username, args.hash, function(err, row) {
+        this.db.get('SELECT name,email,id FROM users WHERE username = ? AND password = ?', args.email, args.password, function(err, row) {
             if (!row){
                 return resolve(null);
             }
@@ -80,7 +81,7 @@ class MainDatabaseControler {
   }
   getUserById(args){
     return new Promise((resolve, reject) => {
-        this.db.get('SELECT id, name,email FROM users WHERE id = ?', args.id, function(err, row) {
+        this.db.get('SELECT * FROM users WHERE id = ?', args.id, function(err, row) {
             if (!row){
                 return resolve(null);
             }
