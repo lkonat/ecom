@@ -1,8 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const {userById} = require("../controllers/user");
-const {create} = require("../controllers/category");
+const {create,categoryById,read,update,remove,list} = require("../controllers/category");
 const {requireSignin,isAuth,isAdmin} = require("../controllers/auth");
 router.post('/category/create/:userId',requireSignin,isAuth,isAdmin,create);
+router.get('/category/:category',read);
+router.get('/category',list);
+router.put('/category/:category/:userId',requireSignin,isAuth,isAdmin,update);
+router.delete('/category/:category/:userId',requireSignin,isAuth,isAdmin,remove);
 router.param("userId",userById);
+router.param("category",categoryById);
 module.exports = router;

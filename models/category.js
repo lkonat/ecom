@@ -68,7 +68,7 @@ class MainDatabaseControler {
         if(!args.name){
            return resolve({err:"mo name given"});
         }
-        this.db.get('SELECT * FROM category WHERE name = ?', args.name, (err, row)=>{
+        this.db.get('SELECT * FROM category WHERE name = ?', [args.name], (err, row)=>{
             if(err){
                 return resolve({err:err.toString()});
             }else{
@@ -89,6 +89,70 @@ class MainDatabaseControler {
     });
   }
 
+  updateCategory(args){
+    return new Promise((resolve, reject) => {
+        if(!args.name){
+           return resolve({err:"mo name given"});
+        }
+        if(!args.category_id){
+          return resolve({err:"no category_id given"});
+       }
+        this.db.run('UPDATE category SET name = ? WHERE category_id = ?', [args.name,args.category_id], (err, row)=>{
+            if(err){
+                return resolve({err:err.toString()});
+            }else{
+                return resolve({ok:"updated category"});
+            }
+        });
+    });
+  }
+
+
+  findById(args){
+    return new Promise((resolve, reject) => {
+      if(!args.category_id){
+         return resolve({err:"no category_id given"});
+      }
+      this.db.get('SELECT * FROM category WHERE category_id = ?', args.category_id, (err, row)=>{
+          if(err){
+              return resolve({err:err.toString()});
+          }else{
+              return resolve(row);
+          }
+      });
+  });
+  }
+  getAll(){
+    return new Promise((resolve, reject) => {
+      this.db.all('SELECT * FROM category',(err, row)=>{
+          if(err){
+              return resolve({err:err.toString()});
+          }else{
+              return resolve({ok:row});
+          }
+      });
+  });
+  }
+  removeCategory(args){
+    return new Promise((resolve, reject) => {
+      if(!args.category_id){
+         return resolve({err:"no category_id given"});
+      }
+      let transactions = [];
+      transactions.push({query:`DELETE FROM category WHERE category_id=?`,data:[args.category_id]});
+      transactions.push({query:`DELETE FROM product_in_category WHERE category_id=?`,data:[args.category_id]});
+      console.log(transactions);
+      this.addCustomTransactions({
+        transactions: transactions
+      }).then(outcome => {
+        if(outcome.err){
+          return resolve({err:outcome.err});
+        }else {
+          return resolve({ok:"removed category"});
+        }
+      });
+  });
+  }
   addCustomTransactions(args) {
     return new Promise((resolve, reject) => {
       let runEachQuery = (db, all_data, idx, callBack)=>{
