@@ -63,63 +63,29 @@ class MainDatabaseControler {
       this.c_events[what](that);
     }
   }
-  addUser(args){
+  addCategory(args){
     return new Promise((resolve, reject) => {
         if(!args.name){
-            return resolve({ err: "name is missing"});
+           return resolve({err:"mo name given"});
         }
-        if(!args.email){
-            return resolve({ err: "email is missing"});
-        }
-        if(!args.hash){
-            return resolve({ err: "hash is missing"});
-        }
-        let id = this.makeid();
-        let ts = new Date().getTime();
-        this.db.run(`INSERT INTO users(id,email,name,password,ts,role) VALUES(?,?,?,?,?,?)`,[id,args.email,args.name,args.hash,ts,0], function(err, row) {
-            if (!row){
-              return resolve(null);
+        this.db.get('SELECT * FROM category WHERE name = ?', args.name, (err, row)=>{
+            if(err){
+                return resolve({err:err.toString()});
+            }else{
+               if(row && row.name){
+                return resolve(row);
+               }else{
+                   let category_id = this.makeid();
+                   let ts = new Date().getTime();
+                    this.db.run(`INSERT INTO category(category_id,name,ts) VALUES(?,?,?)`,[category_id,args.name,ts], (err, row)=>{
+                        if (err){
+                          return resolve({err:err.toString()});
+                        }
+                        return resolve({category_id:category_id,name:args.name,ts:ts});
+                    });
+               }
             }
-            return resolve({id:id});
         });
-    });
-  }
-  getUser(args){
-    return new Promise((resolve, reject) => {
-        this.db.get('SELECT name,email,id FROM users WHERE username = ? AND password = ?', args.email, args.password, function(err, row) {
-            if (!row){
-                return resolve(null);
-            }
-            return resolve(row);
-          });
-    });
-  }
-  chechEmail(args){
-    return new Promise((resolve, reject) => {
-        this.db.get('SELECT * FROM users WHERE email = ?', args.email, function(err, row) {
-            if (!row){
-                return resolve(null);
-            }
-            if(row.id){
-                return resolve(row);
-            }else{
-                return resolve(null);
-            }
-          });
-    });
-  }
-  getUserById(args){
-    return new Promise((resolve, reject) => {
-        this.db.get('SELECT * FROM users WHERE id = ?', args.id, function(err, row) {
-            if (!row){
-                return resolve(null);
-            }
-            if(row.id){
-                return resolve(row);
-            }else{
-                return resolve(null);
-            }
-          });
     });
   }
 
