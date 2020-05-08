@@ -86,7 +86,7 @@ class MainDatabaseControler {
   }
   getUser(args){
     return new Promise((resolve, reject) => {
-        this.db.get('SELECT name,email,id FROM users WHERE username = ? AND password = ?', args.email, args.password, function(err, row) {
+        this.db.get('SELECT * FROM users WHERE username = ? AND password = ?', args.email, args.password, function(err, row) {
             if (!row){
                 return resolve(null);
             }

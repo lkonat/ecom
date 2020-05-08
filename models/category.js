@@ -73,7 +73,7 @@ class MainDatabaseControler {
                 return resolve({err:err.toString()});
             }else{
                if(row && row.name){
-                return resolve(row);
+                return resolve({err:`category ${row.name} exist!`});
                }else{
                    let category_id = this.makeid();
                    let ts = new Date().getTime();

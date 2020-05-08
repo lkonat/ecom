@@ -12,25 +12,26 @@ exports.signin = async(req,res)=>{
       if(user){
         bcrypt.compare(password, user.password, (err, isMatch) => {
           if (err){
-            return res.status(400).json({err:err.toString()});
+            return res.status(400).json({error:err.toString()});
           }
           if (isMatch) {
             const token = jwt.sign({id:user.id},process.env.JWT_SECRET);
             //persist the token as 't' in cookie with expiring date
             res.cookie('t',token,{expire:new Date()+9999});
             //return response to user and frontend client
-            const {id,email,name} = user;
-            return res.json({token, user:{id,email,name}});
+            user.password = undefined;
+            user.token = token;
+            return res.json(user);
           } else {
-            return res.status(400).json({err:"password does not match"});
+            return res.status(400).json({error:"password does not match"});
           }
         });
       }else{
-        return res.status(400).json({err:"user does not exist"});
+        return res.status(400).json({error:"user does not exist"});
       }
     });
   }else{
-    return res.json({err:'error while creating database connection'});
+    return res.json({error:'error while creating database connection'});
   }
 };
 exports.signout = (req,res)=>{
@@ -49,18 +50,18 @@ exports.signup = async(req,res)=>{
       let errors = [];
     
       if (!name || !email || !password || !password2) {
-        errors.push({ msg: 'Please enter all fields' });
+        errors.push('Please enter all fields');
       }
       if (password != password2) {
-        errors.push({ msg: 'Passwords do not match' });
+        errors.push('Passwords do not match');
       }
       if (password.length < 6) {
-        errors.push({ msg: 'Password must be at least 6 characters' });
+        errors.push('Password must be at least 6 characters');
       }
     
       if (errors.length > 0) {
         res.json({
-            errors:errors,
+            error:errors[0],
             name:name,
             email:email,
             password:password,
@@ -69,9 +70,9 @@ exports.signup = async(req,res)=>{
       } else {
         User.chechEmail({email:email}).then(user => {
           if (user) {
-            errors.push({ msg: 'Email already exists' });
+            errors.push('Email already exists' );
             res.json({
-              errors:errors,
+              error:errors[0],
               name:name,
               email:email,
               password:password,
@@ -102,7 +103,7 @@ exports.signup = async(req,res)=>{
 exports.isAuth = (req,res, next)=>{
   let user = req.profile && req.auth && req.profile.id == req.auth.id;
   if(!user){
-    return res.status(403).json({err:"access denied"});
+    return res.status(403).json({error:"access denied"});
   }
   next();
 };
@@ -110,7 +111,7 @@ exports.isAuth = (req,res, next)=>{
 exports.isAdmin = (req,res, next)=>{
   if(req.profile.role === 0){
     return res.status(403).json({
-      err:'Admin ressource! access denied'
+      error:'Admin ressource! access denied'
     });
   }
   next();

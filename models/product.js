@@ -30,6 +30,7 @@ class MainDatabaseControler {
           );`,
           product_photo:`CREATE TABLE IF NOT EXISTS product_photo(
             photo_id INTEGER PRIMARY KEY,
+            name TEXT,
             url TEXT NOT NULL,
             type TEXT NOT NULL,
             ts Integer NOT NULL,
@@ -63,40 +64,6 @@ class MainDatabaseControler {
       this.c_events[what](that);
     }
   }
-  findById(args){
-    return new Promise((resolve, reject) => {
-      if(!args.product_id){
-        return resolve({err:"product_id missing"});
-      }
-      this.db.get('SELECT * FROM product WHERE product_id = ?', args.product_id, (err, row)=>{
-        if (err){
-            return resolve({err:err.toString()});
-        }
-        return resolve(row);
-      });
-    });
-  }
-  remove(args){
-    return new Promise((resolve, reject) => {
-      if(!args.product_id){
-        return resolve({err:"product_id missing"});
-      }
-      let transactions = [];
-      transactions.push({query:`DELETE FROM product WHERE product_id=?`,data:[args.product_id]});
-      transactions.push({query:`DELETE FROM product_photo WHERE product_id=?`,data:[args.product_id]});
-      console.log(transactions);
-      this.addCustomTransactions({
-        transactions: transactions
-      }).then(outcome => {
-        if(outcome.err){
-          return resolve({err:outcome.err});
-        }else {
-          return resolve(true);
-        }
-      });
-    });
-  }
-
   addProduct(args){
     return new Promise((resolve, reject) => {
         if(!args.name){
@@ -111,74 +78,23 @@ class MainDatabaseControler {
          if(!args.quantity){
             return resolve({err:"mo name given"});
          }
-         
+
         let product_id = this.makeid();
         let ts = new Date().getTime();
         let transactions = [];
         transactions.push({query:`INSERT INTO product(product_id,name,description,price,quantity,ts) VALUES(?,?,?,?,?,?)`,data:[product_id,args.name,args.description,args.price,args.quantity,ts]});
-        if(args.photos){
-          for(let i =0; i< args.photos.length; i++){
-            let photo_id = this.makeid();
-            let photo_url =args.photos[i].url;
-            let photo_type = args.photos[i].type;
-            transactions.push({query:`INSERT INTO product_photo(photo_id,url,type,ts,product_id) VALUES(?,?,?,?,?)`,data:[photo_id,photo_url,photo_type,ts,product_id]});
-          }
-        }
-        this.addCustomTransactions({
-          transactions: transactions
-        }).then(outcome => {
-          if(outcome.err){
-            return resolve({err:outcome.err});
-          }else {
+        transactions.push({query:`INSERT INTO product_photo(product_id,name,description,price,quantity,ts) VALUES(?,?,?,?,?,?)`,data:[product_id,args.name,args.description,args.price,args.quantity,ts]});
+
+
+
+        this.db.run(`INSERT INTO product(product_id,name,description,price,quantity,ts) VALUES(?,?,?,?,?,?)`,[product_id,args.name,args.description,args.price,args.quantity,ts], (err, row)=>{
+            if (err){
+            return resolve({err:err.toString()});
+            }
             return resolve({product_id:product_id,name:args.name,ts:ts});
-          }
         });
     });
   }
-
-
-  updateProduct(args){
-    return new Promise((resolve, reject) => {
-        if(!args.name){
-           return resolve({err:"mo name given"});
-        }
-        if(!args.description){
-            return resolve({err:"mo name given"});
-         }
-         if(!args.price){
-            return resolve({err:"mo name given"});
-         }
-         if(!args.quantity){
-            return resolve({err:"mo name given"});
-         }
-         if(!args.product_id){
-          return resolve({err:"mo product id given"});
-       }
-         
-        let product_id = args.product_id;
-        let ts = new Date().getTime();
-        let transactions = [];
-        transactions.push({query:`UPDATE product SET name=?,description=?,price=?,quantity=? WHERE product_id=?`,data:[args.name,args.description,args.price,args.quantity,product_id]});
-        if(args.photos){
-          for(let i =0; i< args.photos.length; i++){
-            let photo_id = this.makeid();
-            let photo_url =args.photos[i].url;
-            let photo_type = args.photos[i].type;
-            transactions.push({query:`INSERT INTO product_photo(photo_id,url,type,ts,product_id) VALUES(?,?,?,?,?)`,data:[photo_id,photo_url,photo_type,ts,product_id]});
-          }
-        }
-        this.addCustomTransactions({
-          transactions: transactions
-        }).then(outcome => {
-          if(outcome.err){
-            return resolve({err:outcome.err});
-          }else {
-            return resolve({ok:"product updated"});
-          }
-        });
-    });
-  }
-
 
   addCustomTransactions(args) {
     return new Promise((resolve, reject) => {

@@ -6,7 +6,6 @@ exports.create = async(req,res)=>{
         Category.addCategory({
           name:category_name
       }).then((category)=>{
-        console.log("craete",category);
           if(category && category.category_id){
             return res.json(category);
           }else{

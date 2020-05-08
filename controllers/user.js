@@ -2,7 +2,6 @@ const User = require("../models/user");
 exports.userById = async( req,res,next,id)=>{
     let connection = await User.open();
   if(!connection.err){
-      console.log(id);
     User.getUserById({
         id:id
     }).then((user)=>{
